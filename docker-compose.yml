@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sms
+      POSTGRES_PASSWORD: sms
+      POSTGRES_DB: sms
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sms -d sms"]
+      interval: 2s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 30
+
+  # Заглушки операторов: у tele2 намеренно 30% ошибок — видно работу fallback
+  op-mts:
+    build: .
+    command: uvicorn mock_operator.app:app --host 0.0.0.0 --port 9000
+    environment: { OPERATOR_NAME: mts, LATENCY_MS: "40", FAIL_RATE: "0.05" }
+
+  op-megafon:
+    build: .
+    command: uvicorn mock_operator.app:app --host 0.0.0.0 --port 9000
+    environment: { OPERATOR_NAME: megafon, LATENCY_MS: "60", FAIL_RATE: "0.02" }
+
+  op-tele2:
+    build: .
+    command: uvicorn mock_operator.app:app --host 0.0.0.0 --port 9000
+    environment: { OPERATOR_NAME: tele2, LATENCY_MS: "120", FAIL_RATE: "0.3" }
+
+  gateway:
+    build: .
+    ports:
+      - "8000:8000"   # HTTP API, документация на /docs
+      - "9100:9100"   # TCP-протокол
+    environment:
+      PG_DSN: postgresql://sms:sms@postgres:5432/sms
+      REDIS_URL: redis://redis:6379/0
+      OPERATORS: mts=http://op-mts:9000,megafon=http://op-megafon:9000,tele2=http://op-tele2:9000
+      WORKERS: "128"
+      RATE_LIMIT: "100"
+      RATE_WINDOW: "1"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      op-mts: { condition: service_started }
+      op-megafon: { condition: service_started }
+      op-tele2: { condition: service_started }
+
+volumes:
+  pgdata:

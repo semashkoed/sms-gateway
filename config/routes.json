@@ -1,0 +1,10 @@
+{
+  "_comment": "Префиксы условные. Первый оператор — основной, остальные — запасные.",
+  "routes": [
+    { "prefix": "+7913", "operators": ["mts", "megafon"] },
+    { "prefix": "+7923", "operators": ["megafon", "mts"] },
+    { "prefix": "+7902", "operators": ["tele2", "megafon"] },
+    { "prefix": "+7",    "operators": ["mts", "megafon", "tele2"] }
+  ],
+  "default": ["megafon"]
+}
