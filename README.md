@@ -1,6 +1,6 @@
 # SMS Gateway
 
-[![CI](https://github.com/ТВОЙ_ЛОГИН/sms-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/ТВОЙ_ЛОГИН/sms-gateway/actions/workflows/ci.yml)
+[![CI](https://github.com/ТВОЙ_ЛОГИН/sms-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/semashkoed/sms-gateway/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791)
 ![Redis](https://img.shields.io/badge/Redis-7-DC382D)
